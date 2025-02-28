@@ -31,24 +31,26 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="bg-[#0C172C] shadow-md p-4 relative z-50">
+    <nav className="bg-blue-900 shadow-lg p-4 relative z-50">
       <div className="max-w-screen-xl mx-auto flex justify-between items-center">
-        <div className="text-yellow-400 text-2xl font-bold">
-          <Link to="/">DavlatnozForum</Link>
+        <div className="text-white text-2xl font-bold tracking-wide">
+          <Link to="/" className="hover:text-teal-400 transition-colors duration-200">
+            DavlatnozForum
+          </Link>
         </div>
 
         <div className="flex space-x-8">
           <Link
             to="/home"
-            className="flex items-center text-white text-lg hover:text-yellow-400 transition duration-300"
+            className="flex items-center text-white text-lg hover:text-teal-400 transition-colors duration-200"
           >
-            <FaHome className="mr-2" />
+            <FaHome className="mr-2 text-current" />
             Home
           </Link>
 
           <Link
             to="/publications"
-            className="flex items-center text-white text-lg hover:text-yellow-400 transition duration-300"
+            className="flex items-center text-white text-lg hover:text-teal-400 transition-colors duration-200"
           >
             <FaNewspaper className="mr-2" />
             Publications
@@ -56,7 +58,7 @@ const Navbar = () => {
 
           <Link
             to="/messages"
-            className="flex items-center text-white text-lg hover:text-yellow-400 transition duration-300"
+            className="flex items-center text-white text-lg hover:text-teal-400 transition-colors duration-200"
           >
             <FaEnvelope className="mr-2" />
             Messages
@@ -64,7 +66,7 @@ const Navbar = () => {
 
           <Link
             to="/experts"
-            className="flex items-center text-white text-lg hover:text-yellow-400 transition duration-300"
+            className="flex items-center text-white text-lg hover:text-teal-400 transition-colors duration-200"
           >
             <FaUserTie className="mr-2" />
             Experts
@@ -76,13 +78,13 @@ const Navbar = () => {
             <>
               <Link
                 to="/login"
-                className="text-white text-sm font-semibold hover:text-yellow-400 transition duration-300"
+                className="text-white text-sm font-semibold hover:text-teal-400 transition-colors duration-200"
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="text-white text-sm font-semibold hover:text-yellow-400 transition duration-300"
+                className="text-white text-sm font-semibold hover:text-teal-400 transition-colors duration-200"
               >
                 Register
               </Link>
@@ -91,24 +93,24 @@ const Navbar = () => {
             <div className="relative">
               <button
                 onClick={handleDropdownToggle}
-                className="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                className="flex items-center text-white hover:text-teal-400 transition-colors duration-200"
               >
                 <span className="mr-2">Account</span>
-                <FaCaretDown />
+                <FaCaretDown className={`transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg  py-1 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 border border-blue-100">
                   <Link
                     to="/profile-settings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2.5 text-sm text-blue-900 hover:bg-blue-50 hover:text-teal-600 transition-colors"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Profile Settings
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="w-full text-left px-4 py-2.5 text-sm text-blue-900 hover:bg-blue-50 hover:text-teal-600 transition-colors"
                   >
                     Logout
                   </button>

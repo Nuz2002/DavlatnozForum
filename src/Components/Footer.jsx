@@ -3,45 +3,59 @@ import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 const Footer = () => {
   return (
-    <footer className="bg-[#0C172C] text-white py-6">
-      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center px-4">
-        <div className="text-yellow-400 text-lg font-bold mb-4 md:mb-0">
-          DavlatnozForum
+    <footer className="bg-blue-900 text-white py-8 mt-12">
+      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center px-4 gap-6">
+        <div className="text-white text-xl font-bold tracking-wide hover:text-teal-400 transition-colors">
+          <Link to="/">DavlatnozForum</Link>
         </div>
 
-        <div className="flex flex-wrap justify-center space-x-6 text-sm mb-4 md:mb-0">
-          <Link to="/about" className="hover:text-yellow-400 transition duration-300">
+        <div className="flex flex-wrap justify-center gap-6 text-sm">
+          <Link 
+            to="/about" 
+            className="text-blue-100 hover:text-teal-400 transition-colors duration-200"
+          >
             About Us
           </Link>
-          <Link to="/contact" className="hover:text-yellow-400 transition duration-300">
+          <Link 
+            to="/contact" 
+            className="text-blue-100 hover:text-teal-400 transition-colors duration-200"
+          >
             Contact Us
           </Link>
-          <Link to="/terms" className="hover:text-yellow-400 transition duration-300">
+          <Link 
+            to="/terms" 
+            className="text-blue-100 hover:text-teal-400 transition-colors duration-200"
+          >
             Terms of Service
           </Link>
-          <Link to="/privacy" className="hover:text-yellow-400 transition duration-300">
+          <Link 
+            to="/privacy" 
+            className="text-blue-100 hover:text-teal-400 transition-colors duration-200"
+          >
             Privacy Policy
           </Link>
         </div>
 
-        <div className="flex flex-col items-center md:items-end space-y-2 text-sm">
-          <div className="flex items-center">
-            <FaEnvelope className="text-yellow-400 mr-2" />
+        <div className="flex flex-col items-center md:items-end gap-3 text-sm text-blue-100">
+          <div className="flex items-center hover:text-teal-400 transition-colors">
+            <FaEnvelope className="text-teal-400 mr-2" />
             <span>support@davlatnozforum.com</span>
           </div>
-          <div className="flex items-center">
-            <FaPhone className="text-yellow-400 mr-2" />
+          <div className="flex items-center hover:text-teal-400 transition-colors">
+            <FaPhone className="text-teal-400 mr-2" />
             <span>+123 456 7890</span>
           </div>
-          <div className="flex items-center">
-            <FaMapMarkerAlt className="text-yellow-400 mr-2" />
+          <div className="flex items-center hover:text-teal-400 transition-colors">
+            <FaMapMarkerAlt className="text-teal-400 mr-2" />
             <span>123 Forum St, Community City</span>
           </div>
         </div>
       </div>
 
-      <div className="text-center text-xs mt-6 border-t border-gray-600 pt-4">
-        &copy; {new Date().getFullYear()} DavlatnozForum. All rights reserved.
+      <div className="text-center text-sm mt-8 pt-6 border-t border-blue-700">
+        <p className="text-blue-300">
+          &copy; {new Date().getFullYear()} DavlatnozForum. All rights reserved.
+        </p>
       </div>
     </footer>
   );

@@ -13,22 +13,10 @@ const ProfileSettings = () => {
             Public Profile
           </Link>
           <Link
-            to="#"
+            to="/become-expert"
             className="flex items-center px-3 py-2.5 font-semibold hover:text-indigo-900 hover:border hover:rounded-full"
           >
-            Account Settings
-          </Link>
-          <Link
-            to="#"
-            className="flex items-center px-3 py-2.5 font-semibold hover:text-indigo-900 hover:border hover:rounded-full"
-          >
-            Notifications
-          </Link>
-          <Link
-            to="#"
-            className="flex items-center px-3 py-2.5 font-semibold hover:text-indigo-900 hover:border hover:rounded-full"
-          >
-            PRO Account
+            Get Verified
           </Link>
         </div>
       </aside>

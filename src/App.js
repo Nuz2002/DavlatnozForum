@@ -10,6 +10,8 @@ import Experts from './Components/Experts';
 import Footer from './Components/Footer';
 import ExpertVerificationForm from './Components/ExpertVerificationForm';
 import ProfileSettings from './Components/ProfileSettings';
+import AdminExpertVerificationPanel from './Components/AdminExpertVerificationPanel';
+import ForgotPassword from './Components/ForgotPassword';
 
 // When an expert logs in they shall have a link or something saying "get verified and then they can be prompted to submit the expert verification application"
 
@@ -24,6 +26,8 @@ function AppContent() {
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<AdminExpertVerificationPanel/>} />
+        <Route path="/forgot-password" element={<ForgotPassword/>} />
 
         {/* New expert verification route */}
         <Route
