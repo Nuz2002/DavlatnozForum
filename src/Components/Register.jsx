@@ -1,28 +1,94 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaUserAlt } from 'react-icons/fa';
+import axios from 'axios';
 
 const Register = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    role: 'user',
+    role: 'REGULAR',
     password: '',
-    acceptedTerms: false,
   });
 
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // We'll track a separate passwordLengthError to show immediate feedback
+  const [passwordLengthError, setPasswordLengthError] = useState('');
+
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    const { name, value } = e.target;
+
+    // If the user is typing in the password field, check the length
+    if (name === 'password') {
+      if (value.trim().length > 0 && value.trim().length < 6) {
+        setPasswordLengthError('Password must be at least 6 characters');
+      } else {
+        setPasswordLengthError('');
+      }
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.acceptedTerms) {
-      alert('You must accept the Terms and Conditions to register.');
-      return;
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    // Front-end validation: ensure password is >= 6 chars
+    if (formData.password.trim().length < 6) {
+      setErrorMessage('Password must be at least 6 characters.');
+      return; // Don't attempt the request
     }
-    console.log(formData);
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/register`,
+        {
+          username: formData.username.trim(),
+          email: formData.email.trim(),
+          role: formData.role,
+          password: formData.password.trim(),
+        }
+      );
+
+      // The backend response might look like:
+      // { message: "Email already in use" }
+      // or { message: "Registration successful! Please verify your email..." }
+      const { message } = response.data || {};
+
+      if (!message) {
+        setErrorMessage('No message received from server. Please try again.');
+        return;
+      }
+
+      // If the message includes "successful", treat it as a success
+      if (message.toLowerCase().includes('successful')) {
+        setSuccessMessage(message);
+        // Optionally redirect to login after a delay:
+        // setTimeout(() => navigate('/login'), 2000);
+      } else {
+        // Show the exact message returned by the backend (e.g. "Username already taken", "Email already in use", etc.)
+        setErrorMessage(message);
+      }
+
+    } catch (error) {
+      // If there's an HTTP error (4xx, 5xx), we can often read a server-sent message
+      if (error.response && error.response.data) {
+        // e.g. { message: "Email already in use" }
+        setErrorMessage(error.response.data.message || 'Registration failed.');
+      } else {
+        // A network error or server unreachable
+        setErrorMessage('Network error or server is unavailable.');
+      }
+    }
   };
 
   return (
@@ -32,7 +98,7 @@ const Register = () => {
           <img
             src="/images/forum-icon.png"
             className="lg:max-w-[85%] w-full h-full aspect-square object-contain block mx-auto"
-            alt="login-image"
+            alt="register-image"
           />
         </div>
 
@@ -44,6 +110,19 @@ const Register = () => {
               <p className="text-gray-600 mt-4">Create your account to get started</p>
             </div>
 
+            {/* Error or Success Messages */}
+            {errorMessage && (
+              <div className="text-red-500 mb-4">
+                {errorMessage}
+              </div>
+            )}
+            {successMessage && (
+              <div className="text-green-600 mb-4">
+                {successMessage}
+              </div>
+            )}
+
+            {/* USERNAME */}
             <div>
               <label className="text-blue-900 text-sm font-medium block mb-2">Username</label>
               <input
@@ -55,8 +134,14 @@ const Register = () => {
                 value={formData.username}
                 onChange={handleChange}
               />
+              {formData.username && (
+                <p className="text-sm text-gray-500 mt-2">
+                  This username will be publicly visible to others
+                </p>
+              )}
             </div>
 
+            {/* EMAIL */}
             <div className="mt-8">
               <label className="text-blue-900 text-sm font-medium block mb-2">Email</label>
               <input
@@ -70,6 +155,7 @@ const Register = () => {
               />
             </div>
 
+            {/* ROLE */}
             <div className="mt-8">
               <label className="text-blue-900 text-sm font-medium block mb-2">Role</label>
               <select
@@ -79,11 +165,12 @@ const Register = () => {
                 value={formData.role}
                 onChange={handleChange}
               >
-                <option value="user">Regular User</option>
-                <option value="specialist">Specialist</option>
+                <option value="REGULAR">Regular User</option>
+                <option value="SPECIALIST">Expert</option>
               </select>
             </div>
 
+            {/* PASSWORD */}
             <div className="mt-8">
               <label className="text-blue-900 text-sm font-medium block mb-2">Password</label>
               <input
@@ -95,34 +182,19 @@ const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
               />
+              {/* Real-time error if password < 6 */}
+              {passwordLengthError && (
+                <p className="text-red-500 text-sm mt-2">{passwordLengthError}</p>
+              )}
             </div>
 
-            <div className="flex items-center mt-8">
-              <input
-                id="terms"
-                name="acceptedTerms"
-                type="checkbox"
-                className="h-4 w-4 shrink-0 text-blue-600 border-2 border-blue-200 rounded focus:ring-blue-500 transition-colors"
-                checked={formData.acceptedTerms}
-                onChange={handleChange}
-              />
-              <label htmlFor="terms" className="text-blue-900 ml-3 block text-sm">
-                I accept the{' '}
-                <a href="#" className="text-teal-600 font-semibold hover:text-teal-700 transition-colors">
-                  Terms and Conditions
-                </a>
-              </label>
-            </div>
-
+            {/* SUBMIT */}
             <div className="mt-8">
               <button
                 type="submit"
-                disabled={!formData.acceptedTerms}
-                className={`w-full py-3 px-6 text-sm font-semibold rounded-lg focus:outline-none transition-colors shadow-md ${
-                  formData.acceptedTerms
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'bg-blue-200 text-blue-400 cursor-not-allowed'
-                }`}
+                // Disable the button if the password is too short
+                disabled={formData.password.trim().length < 6}
+                className="w-full py-3 px-6 text-sm font-semibold rounded-lg focus:outline-none transition-colors shadow-md bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white"
               >
                 Register
               </button>

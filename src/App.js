@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Register from './Components/Register';
 import Login from './Components/Login';
 import Navbar from './Components/Navbar';
@@ -14,47 +14,32 @@ import AdminExpertVerificationPanel from './Components/AdminExpertVerificationPa
 import ForgotPassword from './Components/ForgotPassword';
 import ResetPassword from './Components/ResetPassword';
 
-// When an expert logs in they shall have a link or something saying "get verified and then they can be prompted to submit the expert verification application"
-
 function AppContent() {
   const location = useLocation();
+
+  // For the Navbar: only hide it on login/register
   const showNavbar = !['/login', '/register'].includes(location.pathname);
-  const showFooter = location.pathname === '/home'; // Show footer only on Home page
+
+  // For the Footer: you only want it on /home (example logic)
+  const showFooter = location.pathname === '/home';
 
   return (
     <>
       {showNavbar && <Navbar />}
+
       <Routes>
+        {/* --- Public (unauthenticated) routes --- */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminExpertVerificationPanel/>} />
-        <Route path="/forgot-password" element={<ForgotPassword/>} />
-        <Route path="/reset-password" element={<ResetPassword/>} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* New expert verification route */}
+        {/* --- Protected routes --- */}
         <Route
-          path="/become-expert"
-          element={
-
-              <ExpertVerificationForm />
-            
-          }
-        />
-
-<Route
-          path="/profile-settings"
+          path="/home"
           element={
             <ProtectedRoute>
-              <ProfileSettings />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Navigate to="/home" replace />
+              <Home />
             </ProtectedRoute>
           }
         />
@@ -83,19 +68,45 @@ function AppContent() {
           }
         />
         <Route
-          path="/home"
+          path="/profile-settings"
           element={
             <ProtectedRoute>
-              <Home />
+              <ProfileSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/become-expert"
+          element={
+            <ProtectedRoute>
+              <ExpertVerificationForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminExpertVerificationPanel />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* A route for “/” that redirects to “/home” */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/home" replace />
             </ProtectedRoute>
           }
         />
       </Routes>
+
       {showFooter && <Footer />}
     </>
   );
 }
-
 
 function App() {
   return (

@@ -1,28 +1,59 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaSignInAlt } from 'react-icons/fa';
+import axios from 'axios';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    localStorage.setItem('isLoggedIn', 'true');
-    window.location.href = '/home';
+    setErrorMessage(''); // Clear any previous error
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`,
+        {
+          email: formData.email.trim(),
+          password: formData.password.trim(),
+        }
+      );
+
+      // Our new login response has "message", "accessToken", and "refreshToken"
+      if (response.data && response.data.accessToken && response.data.refreshToken) {
+        // Store tokens (for dev/demo, storing in localStorage; consider HttpOnly cookies in production)
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+        
+        // Mark user as logged in, or store other user info if needed
+        localStorage.setItem('isLoggedIn', 'true');
+
+        // Redirect upon success
+        window.location.href = '/home';
+      } else {
+        // If tokens are missing, show an error
+        setErrorMessage('Email or password incorrect.');
+      }
+    } catch (error) {
+      // HTTP or validation error from the server
+      if (error.response && error.response.data) {
+        setErrorMessage(error.response.data.message || 'Login failed. Please try again.');
+      } else {
+        setErrorMessage('Network error or server is unavailable.');
+      }
+    }
   };
-  
+
   return (
     <div className="font-[sans-serif] bg-gradient-to-br from-blue-50 to-blue-100 md:h-screen">
       <div className="grid md:grid-cols-2 items-center gap-8 h-full">
-        <div className="max-md:order-1 p-4">
+        <div className="max-md:order-1 p-4 hidden sm:block">
           <img
             src="/images/forum-icon.png"
             className="lg:max-w-[85%] w-full h-full aspect-square object-contain block mx-auto"
@@ -37,6 +68,12 @@ const Login = () => {
               <FaSignInAlt className="text-blue-600 text-4xl mx-auto mt-4" />
               <p className="text-gray-600 mt-4">Sign in to continue to your account</p>
             </div>
+
+            {errorMessage && (
+              <div className="text-red-500 mb-4">
+                {errorMessage}
+              </div>
+            )}
 
             <div>
               <label className="text-blue-900 text-sm font-medium block mb-2">Email</label>
