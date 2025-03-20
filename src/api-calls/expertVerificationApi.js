@@ -1,8 +1,5 @@
 // expertVerificationApi.js
-import axios from 'axios';
-
-// Base URL for the expert verification endpoint
-const API_BASE_URL = 'http://localhost:8080/api/expert-verification';
+import apiClient from './apiClient';
 
 /**
  * Submits an expert verification application.
@@ -24,7 +21,7 @@ export const submitApplication = async (applicationData) => {
     formData.append('lastName', applicationData.lastName);
     formData.append('dateOfBirth', applicationData.dateOfBirth);
     formData.append('professionalBio', applicationData.professionalBio);
-    
+
     // Append optional files if provided
     if (applicationData.profilePhoto) {
       formData.append('profilePhoto', applicationData.profilePhoto);
@@ -36,8 +33,8 @@ export const submitApplication = async (applicationData) => {
       formData.append('qualifications', applicationData.qualifications);
     }
 
-    // Post the form data to the expert verification endpoint.
-    const response = await axios.post(API_BASE_URL, formData, {
+    // Post the form data to the expert verification endpoint using apiClient
+    const response = await apiClient.post('/expert-verification', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

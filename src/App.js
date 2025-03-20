@@ -13,6 +13,7 @@ import ProfileSettings from './Components/ProfileSettings';
 import AdminExpertVerificationPanel from './Components/AdminExpertVerificationPanel';
 import ForgotPassword from './Components/ForgotPassword';
 import ResetPassword from './Components/ResetPassword';
+import PublicationsDraft from './Components/Publications-Group/PublicationsDraft';
 
 function AppContent() {
   const location = useLocation();

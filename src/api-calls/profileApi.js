@@ -1,8 +1,5 @@
 // profileApi.js
-import axios from 'axios';
-
-// Base URL for the profile endpoints.
-const API_BASE_URL = 'http://localhost:8080/api/profile';
+import apiClient from './apiClient';
 
 /**
  * Retrieves the current user's profile.
@@ -10,7 +7,7 @@ const API_BASE_URL = 'http://localhost:8080/api/profile';
  */
 export const getUserProfile = async () => {
   try {
-    const response = await axios.get(API_BASE_URL);
+    const response = await apiClient.get('/api/profile');
     return response.data;
   } catch (error) {
     throw error;
@@ -24,7 +21,7 @@ export const getUserProfile = async () => {
  */
 export const updateUserProfile = async (profileData) => {
   try {
-    const response = await axios.put(API_BASE_URL, profileData, {
+    const response = await apiClient.put('/api/profile', profileData, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -45,7 +42,7 @@ export const uploadProfilePicture = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await axios.post(`${API_BASE_URL}/picture`, formData, {
+    const response = await apiClient.post('/api/profile/picture', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -62,7 +59,7 @@ export const uploadProfilePicture = async (file) => {
  */
 export const deleteProfilePicture = async () => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/picture`);
+    const response = await apiClient.delete('/api/profile/picture');
     return response.data;
   } catch (error) {
     throw error;

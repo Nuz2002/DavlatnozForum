@@ -1,8 +1,5 @@
 // adminExpertVerificationApi.js
-import axios from 'axios';
-
-// Base URL for the Admin Expert Verifications API
-const API_BASE_URL = 'http://localhost:8080/api/admin/expert-verifications';
+import apiClient from './apiClient';
 
 /**
  * Retrieves all pending expert verification applications.
@@ -10,10 +7,9 @@ const API_BASE_URL = 'http://localhost:8080/api/admin/expert-verifications';
  */
 export const getPendingApplications = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/pending`);
+    const response = await apiClient.get('/admin/expert-verifications/pending');
     return response.data;
   } catch (error) {
-    // Optionally handle the error here or propagate it for centralized error handling
     throw error;
   }
 };
@@ -25,7 +21,7 @@ export const getPendingApplications = async () => {
  */
 export const getApplicationDetails = async (applicationId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${applicationId}`);
+    const response = await apiClient.get(`/admin/expert-verifications/${applicationId}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -40,9 +36,8 @@ export const getApplicationDetails = async (applicationId) => {
  */
 export const reviewApplication = async (applicationId, approved) => {
   try {
-    // The approved parameter is sent as a query parameter.
-    const response = await axios.post(`${API_BASE_URL}/${applicationId}/review`, null, {
-      params: { approved }
+    const response = await apiClient.post(`/admin/expert-verifications/${applicationId}/review`, null, {
+      params: { approved },
     });
     return response.data;
   } catch (error) {

@@ -26,8 +26,9 @@ const apiClient = axios.create({
 // Attach the access token to every request
 apiClient.interceptors.request.use((config) => {
   const token = getAccessToken();
+  console.log('Attaching token:', token);
   if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers['Authorization'] = `Bearer ${token.trim()}`;
   }
   return config;
 });
