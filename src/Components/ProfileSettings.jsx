@@ -1,14 +1,115 @@
 import { NavLink } from "react-router-dom";
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { 
+  getUserProfile, 
+  updateUserProfile, 
+  uploadProfilePicture, 
+  deleteProfilePicture 
+} from '../api-calls/profileApi';
+import defaultProfilePic from '../assets/default-profile.png';
 
 const ProfileSettings = () => {
   const [fileInput, setFileInput] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [profileData, setProfileData] = useState({
+    username: '',
+    profession: '',
+    accountType: '',
+    bio: '',
+    photo: ''
+  });
+  const [previewImage, setPreviewImage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const userType = localStorage.getItem('userType');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getUserProfile();
+        setProfileData({
+          username: data.username,
+          profession: data.profession,
+          accountType: data.accountType ? 'public' : 'private',
+          bio: data.bio,
+          photo: data.photo
+        });
+      } catch (err) {
+        setError('Failed to load profile data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handlePictureChange = () => {
     fileInput.click();
   };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setIsLoading(true);
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (e) => setPreviewImage(e.target.result);
+      reader.readAsDataURL(file);
+
+      // Upload to backend
+      const { photoUrl } = await uploadProfilePicture(file);
+      setProfileData(prev => ({ ...prev, photo: photoUrl }));
+    } catch (err) {
+      setError('Failed to upload profile picture');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeletePicture = async () => {
+    try {
+      setIsLoading(true);
+      await deleteProfilePicture();
+      setProfileData(prev => ({ ...prev, photo: '' }));
+      setPreviewImage('');
+    } catch (err) {
+      setError('Failed to delete profile picture');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setProfileData(prev => ({ ...prev, [id]: value }));
+  };
+
+// In handleSubmit function
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    setIsLoading(true);
+    const updatedProfile = await updateUserProfile({
+      ...profileData,
+      accountType: profileData.accountType === 'public' // Convert to boolean
+    });
+    
+    setProfileData({
+      ...updatedProfile,
+      accountType: updatedProfile.accountType ? 'public' : 'private' // Convert back to string
+    });
+  } catch (err) {
+    setError('Failed to update profile');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="bg-blue-50 w-full flex flex-col md:flex-row gap-5 px-3 md:px-8 lg:px-16 xl:px-28 text-blue-900 min-h-screen">
@@ -37,19 +138,21 @@ const ProfileSettings = () => {
           >
             Public Profile
           </NavLink>
-          <NavLink
-            to="/become-expert"
-            className={({ isActive }) => 
-              `flex items-center px-4 py-3 font-medium rounded-xl transition-colors shadow-sm ${
-                isActive 
-                  ? 'bg-teal-600 text-white'
-                  : 'text-blue-700 hover:bg-blue-50'
-              }`
-            }
-            onClick={() => setShowMobileMenu(false)}
-          >
-            Get Verified
-          </NavLink>
+          {userType === 'SPECIALIST' && (
+      <NavLink
+        to="/become-expert"
+        className={({ isActive }) => 
+          `flex items-center px-4 py-3 font-medium rounded-xl transition-colors shadow-sm ${
+            isActive 
+              ? 'bg-teal-600 text-white'
+              : 'text-blue-700 hover:bg-blue-50'
+          }`
+        }
+        onClick={() => setShowMobileMenu(false)}
+      >
+        Get Verified
+      </NavLink>
+    )}
         </div>
       </aside>
 
@@ -66,7 +169,7 @@ const ProfileSettings = () => {
                 <div className="relative">
                   <img
                     className="object-cover w-32 h-32 sm:w-40 sm:h-40 p-1 rounded-full ring-2 ring-teal-500 shadow-md"
-                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGZhY2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
+                    src={previewImage || profileData.photo || defaultProfilePic}
                     alt="Profile"
                   />
                   <div 
@@ -82,6 +185,7 @@ const ProfileSettings = () => {
                     className="hidden" 
                     accept="image/*"
                     ref={input => setFileInput(input)}
+                    onChange={handleFileChange}
                   />
                 </div>
                 <div className="flex flex-col space-y-3 sm:ml-8 mt-2 sm:mt-0 w-full sm:w-auto">
@@ -102,35 +206,6 @@ const ProfileSettings = () => {
               </div>
 
               <div className="items-center mt-6 sm:mt-10">
-                {/* <div className="grid gap-4 sm:gap-6 mb-6 grid-cols-1 md:grid-cols-2">
-                  <div>
-                    <label htmlFor="first_name" className="block mb-2 text-sm font-medium text-blue-900">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      id="first_name"
-                      className="bg-white border border-blue-200 text-blue-900 text-sm rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none block w-full p-2.5 sm:p-3"
-                      placeholder="First name"
-                      defaultValue="Jane"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="last_name" className="block mb-2 text-sm font-medium text-blue-900">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      id="last_name"
-                      className="bg-white border border-blue-200 text-blue-900 text-sm rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none block w-full p-2.5 sm:p-3"
-                      placeholder="Last name"
-                      defaultValue="Ferguson"
-                      required
-                    />
-                  </div>
-                </div> */}
 
                 <div className="mb-6">
                   <label htmlFor="username" className="block mb-2 text-sm font-medium text-blue-900">
@@ -139,25 +214,13 @@ const ProfileSettings = () => {
                   <input
                     type="text"
                     id="username"
+                    value={profileData.username}
+                    onChange={handleInputChange}
                     className="bg-white border border-blue-200 text-blue-900 text-sm rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none block w-full p-2.5 sm:p-3"
-                    placeholder="Your username"
-                    defaultValue="jane_ferguson"
+                    // placeholder="Your username"
                     required
                   />
                 </div>
-
-                {/* <div className="mb-6">
-                  <label htmlFor="email" className="block mb-2 text-sm font-medium text-blue-900">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="bg-white border border-blue-200 text-blue-900 text-sm rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none block w-full p-2.5 sm:p-3"
-                    placeholder="your.email@mail.com"
-                    required
-                  />
-                </div> */}
 
                 <div className="mb-6">
                   <label htmlFor="profession" className="block mb-2 text-sm font-medium text-blue-900">
@@ -167,19 +230,22 @@ const ProfileSettings = () => {
                     type="text"
                     id="profession"
                     className="bg-white border border-blue-200 text-blue-900 text-sm rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none block w-full p-2.5 sm:p-3"
-                    placeholder="Your profession"
-                    required
+                    // placeholder="Your profession"
+                    // required
+                    value={profileData.profession}
+                    onChange={handleInputChange}
                   />
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="account-type" className="block mb-2 text-sm font-medium text-blue-900">
+                  <label htmlFor="accountType" className="block mb-2 text-sm font-medium text-blue-900">
                     Account Privacy
                   </label>
                   <select
-                    id="account-type"
+                    id="accountType"
                     className="bg-white border border-blue-200 text-blue-900 text-sm rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none block w-full p-2.5 sm:p-3"
-                    defaultValue="public"
+                    value={profileData.accountType}
+                    onChange={handleInputChange}
                   >
                     <option value="public">Public Account</option>
                     <option value="private">Private Account</option>
@@ -194,17 +260,36 @@ const ProfileSettings = () => {
                     id="bio"
                     rows="3"
                     className="block p-2.5 sm:p-3 w-full text-sm text-blue-900 bg-white rounded-lg border border-blue-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                    placeholder="Write something about yourself..."
+                    // placeholder="Write something about yourself..."
+                    value={profileData.bio}
+                    onChange={handleInputChange}
                   ></textarea>
                 </div>
 
+                {/* Loading and Error States */}
+                {isLoading && <p>Saving changes...</p>}
+                {error && <p className="text-red-500">{error}</p>}
+
                 <div className="flex justify-end border-t-2 border-blue-100 pt-6">
-                  <button
+                  {/* <button
                     type="submit"
+                    onClick={handleSubmit}
+                    disabled={isLoading}
                     className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-md transition-colors"
                   >
                     Save Changes
-                  </button>
+                  </button> */}
+
+                <button
+                  ype="submit"
+                  onClick={handleSubmit}
+                  disabled={isLoading}
+                  className={`w-full sm:w-auto px-6 py-2.5 sm:py-3 ${
+                        isLoading ? 'bg-gray-400' : 'bg-teal-600 hover:bg-teal-700'
+                      } text-white font-medium rounded-lg shadow-md transition-colors`}
+                    >
+                      {isLoading ? 'Saving...' : 'Save Changes'}
+                </button>
                 </div>
               </div>
             </div>

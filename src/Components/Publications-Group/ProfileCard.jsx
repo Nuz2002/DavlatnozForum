@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom';
 
-const ProfileCard = ({ user, onClose }) => {
+const ProfileCard = ({ user, onClose, isLoading }) => {
   if (!user || user.accountType !== 'public') return null;
 
   return (
-    <div 
+    <div className="profile-card-overlay">
+      {isLoading ? (
+        <div className="loading-spinner">Loading profile...</div>
+      ) : (
+        <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
@@ -41,6 +45,9 @@ const ProfileCard = ({ user, onClose }) => {
         </div>
       </div>
     </div>
+      )}
+    </div>
+    
   );
 };
 

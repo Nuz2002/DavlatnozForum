@@ -30,7 +30,7 @@ export default function PostCard({
         <UserProfileButton user={post.user} onClick={onUserProfileClick} />
         {/* Name & username next to it */}
         <div className="ml-2">
-          <p className="text-blue-900 font-bold">{post.user.name}</p>
+          {/* <p className="text-blue-900 font-bold">{post.user.name}</p> */}
           <p className="text-sm text-blue-600">@{post.user.username}</p>
         </div>
       </div>

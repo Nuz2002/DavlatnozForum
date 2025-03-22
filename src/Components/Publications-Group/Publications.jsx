@@ -292,6 +292,7 @@ import ProfileCard from './ProfileCard';
 import { getUserProfile } from '../../api-calls/profileApi';
 import { getAllPosts, createPost } from '../../api-calls/postApi';
 import { createComment } from '../../api-calls/commentApi';
+import { getUserProfileByUsername } from '../../api-calls/profileApi';
 
 const MAX_VISIBLE_COMMENTS = 3;
 const MAX_VISIBLE_REPLIES = 2;
@@ -302,6 +303,7 @@ export default function Publications() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [selectedUserForProfile, setSelectedUserForProfile] = useState(null);
   const [newPost, setNewPost] = useState('');
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
   
   // Data states
   const [posts, setPosts] = useState([]);
@@ -411,13 +413,28 @@ const addReply = async (postId, commentId, replyTargetUser, text) => {
     }));
   };
 
-  // Show profile card for public accounts
-  const handleUserProfileClick = (clickedUser) => {
-    if (clickedUser && clickedUser.accountPrivacy === 'public') {
-      setSelectedUserForProfile(clickedUser);
+  // In Publications.js
+const handleUserProfileClick = async (clickedUser) => {
+  if (!clickedUser?.username) return;
+  
+  setIsProfileLoading(true);
+  try {
+    const fullProfile = await getUserProfileByUsername(clickedUser.username);
+    if (fullProfile.accountType === 'public') {
+      setSelectedUserForProfile(fullProfile);
     }
-  };
-  const closeProfileCard = () => setSelectedUserForProfile(null);
+  } catch (error) {
+    console.error('Profile load failed:', error);
+  } finally {
+    setIsProfileLoading(false);
+  }
+
+};
+
+
+const closeProfileCard = () => {
+  setSelectedUserForProfile(null);
+};
 
   // ---------------------------------------------------------------------------
   // Render
@@ -457,7 +474,7 @@ const addReply = async (postId, commentId, replyTargetUser, text) => {
 
       {/* Profile modal (only shows for a public user) */}
       {selectedUserForProfile && (
-        <ProfileCard user={selectedUserForProfile} onClose={closeProfileCard} />
+        <ProfileCard user={selectedUserForProfile} onClose={closeProfileCard} isLoading={isProfileLoading}/>
       )}
     </div>
   );

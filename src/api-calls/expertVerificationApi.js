@@ -34,7 +34,7 @@ export const submitApplication = async (applicationData) => {
     }
 
     // Post the form data to the expert verification endpoint using apiClient
-    const response = await apiClient.post('/expert-verification', formData, {
+    const response = await apiClient.post('/api/expert-verification', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

@@ -14,9 +14,29 @@ import AdminExpertVerificationPanel from './Components/AdminExpertVerificationPa
 import ForgotPassword from './Components/ForgotPassword';
 import ResetPassword from './Components/ResetPassword';
 import PublicationsDraft from './Components/Publications-Group/PublicationsDraft';
+import ExpertVerificationFormDraft from './Components/drafts/ExpertVerificationFormDraft';
+import ApprovedPage from './Components/ApprovedPage';
+import PendingPage from './Components/PendingPage';
+import RejectedPage from './Components/RejectedPage';
 
 function AppContent() {
   const location = useLocation();
+
+  const ExpertVerificationStatusHandler = () => {
+    const status = localStorage.getItem("applicationStatus");
+  
+    switch (status?.toUpperCase()) {
+      case 'APPROVED':
+        return <ApprovedPage />;
+      case 'REJECTED':
+        return <RejectedPage />;
+      case 'PENDING':
+        return <PendingPage />;
+      default:
+        // Show the form if no status exists or status is null
+        return <ExpertVerificationForm />;
+    }
+  };
 
   // For the Navbar: only hide it on login/register
   const showNavbar = !['/login', '/register'].includes(location.pathname);
@@ -77,13 +97,13 @@ function AppContent() {
           }
         />
         <Route
-          path="/become-expert"
-          element={
-            <ProtectedRoute>
-              <ExpertVerificationForm />
-            </ProtectedRoute>
-          }
-        />
+  path="/become-expert"
+  element={
+    <ProtectedRoute>
+      <ExpertVerificationStatusHandler />
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/admin"
           element={

@@ -15,7 +15,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage(''); // Clear any previous error
-
+  
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`,
@@ -24,16 +24,22 @@ const Login = () => {
           password: formData.password.trim(),
         }
       );
-
+  
       // Our new login response has "message", "accessToken", and "refreshToken"
       if (response.data && response.data.accessToken && response.data.refreshToken) {
-        // Store tokens (for dev/demo, storing in localStorage; consider HttpOnly cookies in production)
         localStorage.setItem('accessToken', response.data.accessToken);
         localStorage.setItem('refreshToken', response.data.refreshToken);
-        
-        // Mark user as logged in, or store other user info if needed
         localStorage.setItem('isLoggedIn', 'true');
-
+        localStorage.setItem('userType', response.data.role);
+  
+        // In your login success handler
+if (response.data.role === 'SPECIALIST') {
+  console.log('STATUS:', response.data.status);
+  localStorage.setItem('applicationStatus', response.data.status);
+  // Also set isVerified based on approval status
+  localStorage.setItem('isVerified', response.data.status === 'APPROVED');
+}
+  
         // Redirect upon success
         window.location.href = '/home';
       } else {
@@ -49,7 +55,7 @@ const Login = () => {
       }
     }
   };
-
+  
   return (
     <div className="font-[sans-serif] bg-gradient-to-br from-blue-50 to-blue-100 md:h-screen">
       <div className="grid md:grid-cols-2 items-center gap-8 h-full">

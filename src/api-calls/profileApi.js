@@ -65,3 +65,12 @@ export const deleteProfilePicture = async () => {
     throw error;
   }
 };
+
+export const getUserProfileByUsername = async (username) => {
+  try {
+    const response = await apiClient.get(`/api/profile/${username}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

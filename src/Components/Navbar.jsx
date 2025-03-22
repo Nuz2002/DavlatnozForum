@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaHome, FaNewspaper, FaEnvelope, FaUserTie, FaCaretDown, FaBars, FaTimes } from 'react-icons/fa';
+import {logout} from '../api-calls/authApi';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -8,11 +9,35 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem('accessToken') !== null
+  );
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      // Get the refresh token from storage
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      // Call the logout API
+      if (refreshToken) {
+        await logout(refreshToken);
+      }
+  
+      // Clear all auth-related data
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('isLoggedIn');
+      
+      // Update state and redirect
+      setIsAuthenticated(false);
+      navigate('/login');
+      
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still clear local storage even if API call fails
+      localStorage.clear();
+      navigate('/login');
+    }
   };
 
   const handleDropdownToggle = () => {
