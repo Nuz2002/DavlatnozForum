@@ -72,6 +72,9 @@ const ProfileSettings = () => {
   };
 
   const handleDeletePicture = async () => {
+    const confirmDelete = window.confirm('Are you sure you want to delete your profile picture?');
+    if (!confirmDelete) return;
+  
     try {
       setIsLoading(true);
       await deleteProfilePicture();
@@ -83,6 +86,7 @@ const ProfileSettings = () => {
       setIsLoading(false);
     }
   };
+  
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -198,6 +202,7 @@ const handleSubmit = async (e) => {
                   </button>
                   <button
                     type="button"
+                    onClick={handleDeletePicture}
                     className="px-4 sm:px-6 py-2 text-sm font-medium text-red-600 bg-white rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
                   >
                     Delete Picture
