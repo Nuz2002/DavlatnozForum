@@ -1,7 +1,9 @@
 // /src/components/Publications/NewPostCard.js
 import React from 'react';
 
-const defaultProfilePic = 'https://i.pravatar.cc/40';
+// const defaultProfilePic = 'https://i.pravatar.cc/40';
+
+import defaultProfilePic from '../../assets/default-profile.png';
 
 export default function NewPostCard({ user, newPost, setNewPost, handlePostSubmit }) {
   return (
@@ -33,3 +35,4 @@ export default function NewPostCard({ user, newPost, setNewPost, handlePostSubmi
     </div>
   );
 }
+ 

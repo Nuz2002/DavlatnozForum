@@ -22,6 +22,10 @@ const ProfileSettings = () => {
   const [previewImage, setPreviewImage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [originalProfile, setOriginalProfile] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+
+
 
   const userType = localStorage.getItem('userType');
 
@@ -30,21 +34,31 @@ const ProfileSettings = () => {
       try {
         setIsLoading(true);
         const data = await getUserProfile();
-        setProfileData({
+        const formattedData = {
           username: data.username,
           profession: data.profession,
           accountType: data.accountType ? 'public' : 'private',
           bio: data.bio,
           photo: data.photo
-        });
+        };
+        setProfileData(formattedData);
+        setOriginalProfile(formattedData);
       } catch (err) {
         setError('Failed to load profile data');
       } finally {
         setIsLoading(false);
       }
     };
+  
     fetchProfile();
-  }, []);
+  
+    // Auto-clear success message
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+  
 
   const handlePictureChange = () => {
     fileInput.click();
@@ -96,17 +110,31 @@ const ProfileSettings = () => {
 // In handleSubmit function
 const handleSubmit = async (e) => {
   e.preventDefault();
+
+  setError('');
+  setSuccessMessage('');
+
+  // If nothing changed, early exit
+  if (JSON.stringify(profileData) === JSON.stringify(originalProfile)) {
+    setSuccessMessage('No changes to save.');
+    return;
+  }
+
   try {
     setIsLoading(true);
     const updatedProfile = await updateUserProfile({
       ...profileData,
-      accountType: profileData.accountType === 'public' // Convert to boolean
+      accountType: profileData.accountType === 'public'
     });
-    
-    setProfileData({
+
+    const updatedData = {
       ...updatedProfile,
-      accountType: updatedProfile.accountType ? 'public' : 'private' // Convert back to string
-    });
+      accountType: updatedProfile.accountType ? 'public' : 'private'
+    };
+
+    setProfileData(updatedData);
+    setOriginalProfile(updatedData);
+    setSuccessMessage('Changes saved successfully!');
   } catch (err) {
     setError('Failed to update profile');
   } finally {
@@ -166,7 +194,19 @@ const handleSubmit = async (e) => {
           <div className="w-full px-2 md:px-6 pb-8 mt-4 sm:max-w-xl sm:rounded-lg">
             <h2 className="text-xl md:text-2xl font-bold mb-6 border-b-2 border-blue-100 pb-3">
               Public Profile
-            </h2>
+            </h2> 
+
+            {/* Success/Error Messages moved here */}
+            {successMessage && (
+              <p className="mb-6 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded p-3">
+                {successMessage}
+              </p>
+            )}
+            {error && (
+              <p className="mb-6 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded p-3">
+                {error}
+              </p>
+            )}
 
             <div className="max-w-2xl mx-auto mt-4 md:mt-8">
               <div className="flex flex-col items-center space-y-5 sm:flex-row sm:space-y-0">
@@ -276,14 +316,6 @@ const handleSubmit = async (e) => {
                 {error && <p className="text-red-500">{error}</p>}
 
                 <div className="flex justify-end border-t-2 border-blue-100 pt-6">
-                  {/* <button
-                    type="submit"
-                    onClick={handleSubmit}
-                    disabled={isLoading}
-                    className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-md transition-colors"
-                  >
-                    Save Changes
-                  </button> */}
 
                 <button
                   ype="submit"

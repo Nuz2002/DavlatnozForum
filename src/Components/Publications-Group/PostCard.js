@@ -18,6 +18,7 @@ export default function PostCard({
   MAX_VISIBLE_REPLIES,
   onUserProfileClick,
 }) {
+
   const visibleComments = expandedPostComments[post.id]
     ? post.comments
     : post.comments.slice(0, MAX_VISIBLE_COMMENTS);

@@ -23,12 +23,6 @@ const Footer = () => {
             Contact Us
           </Link>
           <Link 
-            to="/terms" 
-            className="text-blue-100 hover:text-teal-400 transition-colors duration-200"
-          >
-            Terms of Service
-          </Link>
-          <Link 
             to="/privacy" 
             className="text-blue-100 hover:text-teal-400 transition-colors duration-200"
           >

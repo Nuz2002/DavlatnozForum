@@ -27,12 +27,16 @@ export default function RepliesList({
             <UserProfileButton user={reply.user} onClick={onUserProfileClick} />
             <div className="flex-1 ml-2">
               <div className="bg-blue-50 rounded-lg p-3">
-                <p className="text-sm font-medium text-blue-900">{reply.user.username}</p>
-                {reply.replyTo && (
-                  <p className="text-xs text-gray-500">
-                    Replying to @{reply.replyTo.username}
-                  </p>
-                )}
+                <div className="flex flex-wrap items-center text-sm font-medium text-blue-900">
+                <span>{reply.user.username}</span>
+                  {reply.replyTo && (
+                    <span className="text-xs text-gray-500 ml-6">
+                        Replying to @{reply.replyTo.username}
+                    </span>
+                  )}
+                </div>
+
+
                 <p className="text-blue-800">{reply.text}</p>
               </div>
 

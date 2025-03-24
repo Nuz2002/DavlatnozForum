@@ -8,7 +8,7 @@ import apiClient from './apiClient';
  */
 export const startConversation = async (targetEmail) => {
   try {
-    const response = await apiClient.post('/messages/start', null, {
+    const response = await apiClient.post('api/messages/start', null, {
       params: { targetEmail },
     });
     return response.data;
@@ -25,7 +25,7 @@ export const startConversation = async (targetEmail) => {
  */
 export const getConversation = async (conversationId, includeMessages = false) => {
   try {
-    const response = await apiClient.get(`/messages/${conversationId}`, {
+    const response = await apiClient.get(`api/messages/${conversationId}`, {
       params: { includeMessages },
     });
     return response.data;
@@ -43,9 +43,22 @@ export const getConversation = async (conversationId, includeMessages = false) =
  */
 export const getMessagesPage = async (conversationId, page = 0, size = 20) => {
   try {
-    const response = await apiClient.get(`/messages/${conversationId}/messages`, {
+    const response = await apiClient.get(`api/messages/${conversationId}/messages`, {
       params: { page, size },
     });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Fetches all users the current user has conversations with, enriched with profile info.
+ * @returns {Promise<Array>} A promise that resolves to a list of ProfileDTO.
+ */
+export const getConversationUsers = async () => {
+  try {
+    const response = await apiClient.get('api/messages/my-users');
     return response.data;
   } catch (error) {
     throw error;

@@ -20,7 +20,7 @@ export const submitApplication = async (applicationData) => {
     formData.append('firstName', applicationData.firstName);
     formData.append('lastName', applicationData.lastName);
     formData.append('dateOfBirth', applicationData.dateOfBirth);
-    formData.append('professionalBio', applicationData.professionalBio);
+    formData.append('professionalBio', applicationData.professionalBio); 
 
     // Append optional files if provided
     if (applicationData.profilePhoto) {
@@ -42,6 +42,21 @@ export const submitApplication = async (applicationData) => {
     return response.data;
   } catch (error) {
     // Consider handling error responses or logging them appropriately.
+    throw error;
+  }
+};
+
+
+/**
+ * Retrieves all approved experts.
+ *
+ * @returns {Promise<Object[]>} - A promise that resolves to the list of approved experts.
+ */
+export const getApprovedExperts = async () => {
+  try {
+    const response = await apiClient.get('/api/expert-verification/approved');
+    return response.data;
+  } catch (error) {
     throw error;
   }
 };

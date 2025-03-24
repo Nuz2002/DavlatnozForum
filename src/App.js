@@ -13,11 +13,14 @@ import ProfileSettings from './Components/ProfileSettings';
 import AdminExpertVerificationPanel from './Components/AdminExpertVerificationPanel';
 import ForgotPassword from './Components/ForgotPassword';
 import ResetPassword from './Components/ResetPassword';
-import PublicationsDraft from './Components/Publications-Group/PublicationsDraft';
+import PublicationsDraft from './Components/drafts/PublicationsDraft';
 import ExpertVerificationFormDraft from './Components/drafts/ExpertVerificationFormDraft';
 import ApprovedPage from './Components/ApprovedPage';
 import PendingPage from './Components/PendingPage';
 import RejectedPage from './Components/RejectedPage';
+import AboutUs from './Components/AboutUs';
+import ContactUs from './Components/ContactUs';
+import PrivacyPolicy from './Components/PrivacyPolicy';
 
 function AppContent() {
   const location = useLocation();
@@ -39,7 +42,7 @@ function AppContent() {
   };
 
   // For the Navbar: only hide it on login/register
-  const showNavbar = !['/login', '/register'].includes(location.pathname);
+  const showNavbar = !['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
 
   // For the Footer: you only want it on /home (example logic)
   const showFooter = location.pathname === '/home';
@@ -96,14 +99,24 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+
         <Route
-  path="/become-expert"
-  element={
-    <ProtectedRoute>
-      <ExpertVerificationStatusHandler />
-    </ProtectedRoute>
-  }
-/>
+          path="/about"
+          element={
+            <ProtectedRoute>
+              <AboutUs />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+        path="/become-expert"
+        element={
+          <ProtectedRoute>
+            <ExpertVerificationStatusHandler />
+          </ProtectedRoute>
+        }
+      />
         <Route
           path="/admin"
           element={
@@ -112,6 +125,26 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+
+
+        <Route
+          path="/contact"
+          element={
+            <ProtectedRoute>
+              <ContactUs />
+            </ProtectedRoute>
+          }
+        />
+
+      <Route
+          path="/privacy"
+          element={
+            <ProtectedRoute>
+              <PrivacyPolicy />
+            </ProtectedRoute>
+          }
+        />
+
 
         {/* A route for “/” that redirects to “/home” */}
         <Route

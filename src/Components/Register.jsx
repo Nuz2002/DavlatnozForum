@@ -72,12 +72,18 @@ const Register = () => {
       // If the message includes "successful", treat it as a success
       if (message.toLowerCase().includes('successful')) {
         setSuccessMessage(message);
-        // Optionally redirect to login after a delay:
-        // setTimeout(() => navigate('/login'), 2000);
+        setFormData({
+          username: '',
+          email: '',
+          role: 'REGULAR', // default role, if needed
+          password: '',
+        });
       } else {
         // Show the exact message returned by the backend (e.g. "Username already taken", "Email already in use", etc.)
         setErrorMessage(message);
       }
+
+
 
     } catch (error) {
       // If there's an HTTP error (4xx, 5xx), we can often read a server-sent message

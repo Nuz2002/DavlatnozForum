@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 export default function UserProfileButton({ user, onClick }) {
   // Enhanced null check for nested properties
   const safeUser = user || {};
-  const isPublic = safeUser.accountType === 'public';
+  const isPublic = safeUser.accountType === true;
   const username = safeUser.username || 'unknown';
   const displayName = safeUser.name || 'Unknown User';
 
@@ -19,10 +19,11 @@ export default function UserProfileButton({ user, onClick }) {
   const baseClasses = 'inline-flex items-center transition-colors rounded-full';
   const clickableClasses = isPublic
     ? 'cursor-pointer hover:bg-blue-100 p-1'
-    : 'cursor-default';
+    : 'cursor-default'; 
 
   const handleClick = () => {
     if (isPublic && onClick) {
+      console.log('[UserProfileButton] Clicked:', user.username);
       onClick(user);
     }
   };
@@ -30,7 +31,7 @@ export default function UserProfileButton({ user, onClick }) {
   // Add this propTypes definition right after the component function
 UserProfileButton.propTypes = {
   user: PropTypes.shape({
-    accountType: PropTypes.oneOf(['public', 'private']),
+    accountType: PropTypes.bool,
     username: PropTypes.string,
     name: PropTypes.string,
     photo: PropTypes.string,

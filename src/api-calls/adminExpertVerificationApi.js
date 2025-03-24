@@ -7,7 +7,7 @@ import apiClient from './apiClient';
  */
 export const getPendingApplications = async () => {
   try {
-    const response = await apiClient.get('/admin/expert-verifications/pending');
+    const response = await apiClient.get('api/admin/expert-verifications/pending');
     return response.data;
   } catch (error) {
     throw error;
@@ -21,7 +21,7 @@ export const getPendingApplications = async () => {
  */
 export const getApplicationDetails = async (applicationId) => {
   try {
-    const response = await apiClient.get(`/admin/expert-verifications/${applicationId}`);
+    const response = await apiClient.get(`api/admin/expert-verifications/${applicationId}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -36,7 +36,7 @@ export const getApplicationDetails = async (applicationId) => {
  */
 export const reviewApplication = async (applicationId, approved) => {
   try {
-    const response = await apiClient.post(`/admin/expert-verifications/${applicationId}/review`, null, {
+    const response = await apiClient.post(`api/admin/expert-verifications/${applicationId}/review`, null, {
       params: { approved },
     });
     return response.data;
