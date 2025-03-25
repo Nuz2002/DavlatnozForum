@@ -64,3 +64,23 @@ export const getConversationUsers = async () => {
     throw error;
   }
 };
+
+/**
+ * Sends a message to a conversation.
+ * @param {number|string} conversationId - The ID of the conversation.
+ * @param {string} text - The message text.
+ * @returns {Promise<Object>} A promise that resolves to the created MessageDTO.
+ */
+export const sendMessageToConversation = async (conversationId, text) => {
+  try {
+    const response = await apiClient.post(`api/messages/${conversationId}/send`, text, {
+      headers: {
+        "Content-Type": "text/plain", // backend expects raw string
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+

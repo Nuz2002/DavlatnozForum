@@ -1,7 +1,5 @@
 
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
-import { deleteProfilePicture } from '../../api-calls/profileApi';
 import defaultProfilePic from '../../assets/default-profile.png';
 
 const ProfileCard = ({ user, onClose, isLoading }) => {

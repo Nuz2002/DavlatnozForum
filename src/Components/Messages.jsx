@@ -4,6 +4,7 @@ import {
   getConversationUsers,
   startConversation,
   getMessagesPage,
+  sendMessageToConversation,
 } from "../api-calls/conversationApi";
 import defaultProfilePic from "../assets/default-profile.png";
 import { jwtDecode } from "jwt-decode";
@@ -73,42 +74,70 @@ export default function Messages() {
     }
   };
 
-  const sendMessage = () => {
+  // const sendMessage = () => {
+  //   if (!input.trim() || !selectedUser || !currentUser) return;
+
+  //   const newMessage = {
+  //     text: input,
+  //     senderUsername: currentUser.email,
+  //     sentAt: new Date().toISOString(),
+  //   };
+
+  //   setMessages((prev) => ({
+  //     ...prev,
+  //     [selectedUser.email]: [
+  //       ...(prev[selectedUser.email] || []),
+  //       newMessage,
+  //     ],
+  //   }));
+
+  //   setInput("");
+
+  //   // Simulated reply (for testing only)
+  //   setTimeout(() => {
+  //     const fakeReply = {
+  //       text: "Got it!",
+  //       senderUsername: selectedUser.email,
+  //       sentAt: new Date().toISOString(),
+  //     };
+
+  //     setMessages((prev) => ({
+  //       ...prev,
+  //       [selectedUser.email]: [
+  //         ...(prev[selectedUser.email] || []),
+  //         fakeReply,
+  //       ],
+  //     }));
+  //   }, 1000);
+  // };
+
+  const sendMessage = async () => {
     if (!input.trim() || !selectedUser || !currentUser) return;
-
-    const newMessage = {
-      text: input,
-      senderUsername: currentUser.email,
-      sentAt: new Date().toISOString(),
-    };
-
-    setMessages((prev) => ({
-      ...prev,
-      [selectedUser.email]: [
-        ...(prev[selectedUser.email] || []),
-        newMessage,
-      ],
-    }));
-
+  
+    const conversationId = conversationMap[selectedUser.email];
+    if (!conversationId) {
+      console.error("Conversation ID not found.");
+      return;
+    }
+  
+    const messageText = input.trim();
     setInput("");
-
-    // Simulated reply (for testing only)
-    setTimeout(() => {
-      const fakeReply = {
-        text: "Got it!",
-        senderUsername: selectedUser.email,
-        sentAt: new Date().toISOString(),
-      };
-
+  
+    try {
+      const newMessage = await sendMessageToConversation(conversationId, messageText);
+  
       setMessages((prev) => ({
         ...prev,
         [selectedUser.email]: [
           ...(prev[selectedUser.email] || []),
-          fakeReply,
+          newMessage,
         ],
       }));
-    }, 1000);
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
+  
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100dvh-4rem)] border-2 border-blue-100 rounded-xl shadow-lg overflow-hidden bg-white">
