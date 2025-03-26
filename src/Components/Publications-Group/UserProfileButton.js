@@ -1,6 +1,7 @@
 import React from 'react';
 import defaultProfilePic from '../../assets/default-profile.png';
 import PropTypes from 'prop-types';
+import VerifiedCheckmark from '../VerifiedCheckMark';
 
 export default function UserProfileButton({ user, onClick }) {
   // Enhanced null check for nested properties
@@ -39,21 +40,25 @@ UserProfileButton.propTypes = {
   onClick: PropTypes.func,
 };
 
-  return (
-    <button
-      className={`${baseClasses} ${clickableClasses}`}
-      onClick={handleClick}
-      disabled={!isPublic}
-      aria-label={isPublic ? `View ${displayName} profile` : undefined}
-    >
+return (
+  <button
+    className={`${baseClasses} ${clickableClasses}`}
+    onClick={handleClick}
+    disabled={!isPublic}
+    aria-label={isPublic ? `View ${displayName} profile` : undefined}
+  >
+    <div className="relative">
       <img
         src={profilePic}
         alt={`${username}'s avatar`}
-        className="w-8 h-8 rounded-full border border-blue-200"
+        className="w-11 h-11 rounded-full border border-blue-200"
         onError={(e) => {
-          e.target.src = defaultProfilePic; // Fallback if image fails to load
+          e.target.src = defaultProfilePic;
         }}
       />
-    </button>
-  );
+      {user?.status && <VerifiedCheckmark />}
+    </div>
+  </button>
+);
+
 }

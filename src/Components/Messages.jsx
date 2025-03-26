@@ -1,42 +1,101 @@
+
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
 import {
   getConversationUsers,
   startConversation,
   getMessagesPage,
   sendMessageToConversation,
 } from "../api-calls/conversationApi";
+
 import defaultProfilePic from "../assets/default-profile.png";
-import { jwtDecode } from "jwt-decode";
+import VerifiedCheckmark from "../Components/VerifiedCheckMark";
+import usePresence from "./hooks/usePresence";
+import useMultiMessageSocket from "./hooks/useMultiMessageSocket";
 
 export default function Messages() {
+  // -- State --
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [conversationMap, setConversationMap] = useState({});
   const [messages, setMessages] = useState({});
-  const [input, setInput] = useState("");
   const [showChat, setShowChat] = useState(false);
+  const [input, setInput] = useState("");
+
+  // For sorting
+  const [lastMessageTimes, setLastMessageTimes] = useState({});
+
+  // For unread badges
+  const [unreadCounts, setUnreadCounts] = useState({});
+
+  // Router stuff
   const { username } = useParams();
+  const location = useLocation();
 
+  // Current user
   const token = localStorage.getItem("accessToken");
-
   let currentUser = null;
   if (token) {
     const decoded = jwtDecode(token);
-    console.log("🔑 JWT decoded:", decoded);
-    // Using email from the token's sub field as the identity.
-    currentUser = {
-      email: decoded.sub,
-    };
+    currentUser = { email: decoded.sub };
   }
 
+  // Presence map
+  const onlineMap = usePresence(currentUser?.email);
+
+  // ==========================
+  // Real-time message receive
+  // ==========================
+  useMultiMessageSocket(conversationMap, (incomingMsg) => {
+    if (!incomingMsg || !incomingMsg.senderEmail) return;
+  
+    const peerEmail =
+      incomingMsg.senderEmail === currentUser.email
+        ? incomingMsg.recipientEmail || selectedUser?.email
+        : incomingMsg.senderEmail;
+  
+    // Update unread badge if this message isn't for the selected chat
+    if (peerEmail !== selectedUser?.email) {
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [peerEmail]: (prev[peerEmail] || 0) + 1,
+      }));
+    }
+  
+    setLastMessageTimes((prev) => ({
+      ...prev,
+      [peerEmail]: new Date(incomingMsg.sentAt),
+    }));
+  
+    // Only add to chat if the message is part of the selected conversation
+    if (peerEmail === selectedUser?.email || incomingMsg.senderEmail === currentUser.email) {
+      setMessages((prev) => ({
+        ...prev,
+        [peerEmail]: [...(prev[peerEmail] || []), incomingMsg],
+      }));
+    }
+  });
+  
+
+  // ==========================
+  // Load conversation users
+  // ==========================
   useEffect(() => {
     getConversationUsers()
       .then(async (data) => {
         setUsers(data);
+        console.log("status", data.status);
 
         if (username) {
-          const found = data.find((u) => u.username === username);
+          let found = data.find((u) => u.username === username);
+
+          // If not found in backend list, use user from Link state
+          if (!found && location.state?.user) {
+            found = location.state.user;
+          }
+
           if (found) {
             setSelectedUser(found);
             setShowChat(true);
@@ -49,8 +108,12 @@ export default function Messages() {
         }
       })
       .catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
 
+  // ==========================
+  // Load messages for a user
+  // ==========================
   const loadMessages = async (user) => {
     try {
       if (conversationMap[user.email]) {
@@ -58,6 +121,7 @@ export default function Messages() {
         const msgs = await getMessagesPage(convoId);
         setMessages((prev) => ({ ...prev, [user.email]: msgs }));
       } else {
+        // Start a conversation if none exist
         const conversation = await startConversation(user.email);
         const convoId = conversation.id;
 
@@ -74,74 +138,44 @@ export default function Messages() {
     }
   };
 
-  // const sendMessage = () => {
-  //   if (!input.trim() || !selectedUser || !currentUser) return;
-
-  //   const newMessage = {
-  //     text: input,
-  //     senderUsername: currentUser.email,
-  //     sentAt: new Date().toISOString(),
-  //   };
-
-  //   setMessages((prev) => ({
-  //     ...prev,
-  //     [selectedUser.email]: [
-  //       ...(prev[selectedUser.email] || []),
-  //       newMessage,
-  //     ],
-  //   }));
-
-  //   setInput("");
-
-  //   // Simulated reply (for testing only)
-  //   setTimeout(() => {
-  //     const fakeReply = {
-  //       text: "Got it!",
-  //       senderUsername: selectedUser.email,
-  //       sentAt: new Date().toISOString(),
-  //     };
-
-  //     setMessages((prev) => ({
-  //       ...prev,
-  //       [selectedUser.email]: [
-  //         ...(prev[selectedUser.email] || []),
-  //         fakeReply,
-  //       ],
-  //     }));
-  //   }, 1000);
-  // };
-
+  // ==========================
+  // Send a message
+  // ==========================
   const sendMessage = async () => {
     if (!input.trim() || !selectedUser || !currentUser) return;
-  
+
     const conversationId = conversationMap[selectedUser.email];
     if (!conversationId) {
       console.error("Conversation ID not found.");
       return;
     }
-  
+
     const messageText = input.trim();
     setInput("");
-  
+
     try {
+      // Send the message to the server
       const newMessage = await sendMessageToConversation(conversationId, messageText);
-  
-      setMessages((prev) => ({
+
+      // Update lastMessageTimes for sorting
+      const now = new Date(newMessage.sentAt);
+      setLastMessageTimes((prev) => ({
         ...prev,
-        [selectedUser.email]: [
-          ...(prev[selectedUser.email] || []),
-          newMessage,
-        ],
+        [selectedUser.email]: now,
       }));
+
+      // (Don't manually add to `messages` => the WebSocket broadcast will do it)
     } catch (error) {
       console.error("Failed to send message:", error);
     }
   };
-  
 
+  // ==========================
+  // Render
+  // ==========================
   return (
     <div className="flex flex-col md:flex-row h-[calc(100dvh-4rem)] border-2 border-blue-100 rounded-xl shadow-lg overflow-hidden bg-white">
-      {/* Users List */}
+      {/* -- Users List -- */}
       <div
         className={`w-full md:w-1/4 bg-blue-50 p-4 overflow-y-auto border-b-2 md:border-r-2 border-blue-100 ${
           showChat ? "hidden md:block" : "block"
@@ -150,38 +184,85 @@ export default function Messages() {
         <h2 className="text-blue-900 text-lg font-semibold mb-4 px-2">
           Conversations
         </h2>
-        {users.map((user) => (
-          <div
-            key={user.email}
-            className={`flex items-center p-2 sm:p-3 cursor-pointer rounded-xl transition-all mb-2 ${
-              selectedUser?.email === user.email
-                ? "bg-blue-100 shadow-inner"
-                : "hover:bg-blue-100/50"
-            }`}
-            onClick={async () => {
-              setSelectedUser(user);
-              setShowChat(true);
-              await loadMessages(user);
-            }}
-          >
-            <img
-              src={user.photo || defaultProfilePic}
-              alt={user.username}
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-3 border-2 border-blue-200"
-            />
-            <div>
-              <p className="text-blue-900 font-medium text-sm sm:text-base">
-                {user.firstName || user.username}
-              </p>
-              <p className="text-blue-600 text-xs sm:text-sm">Active now</p>
-            </div>
-          </div>
-        ))}
+        {users.length === 0 ? (
+          <p className="text-blue-700 text-sm px-2 italic">
+            You have no messages yet.
+          </p>
+        ) : (
+          users
+            .slice() // clone the array
+            .sort((a, b) => {
+              // Sort by latest message time
+              const aTime = lastMessageTimes[a.email] || new Date(0);
+              const bTime = lastMessageTimes[b.email] || new Date(0);
+              return bTime - aTime; // newest first
+            })
+            .map((user) => {
+              const isSelected = selectedUser?.email === user.email;
+              const unreadCount = unreadCounts[user.email] || 0;
+
+              return (
+                <div
+                  key={user.email}
+                  className={`flex items-center p-2 sm:p-3 cursor-pointer rounded-xl transition-all mb-2 ${
+                    isSelected
+                      ? "bg-blue-100 shadow-inner"
+                      : "hover:bg-blue-100/50"
+                  }`}
+                  onClick={async () => {
+                    // Reset unread count for this user
+                    setUnreadCounts((prev) => ({
+                      ...prev,
+                      [user.email]: 0,
+                    }));
+                    setSelectedUser(user);
+                    setShowChat(true);
+                    await loadMessages(user);
+                  }}
+                >
+                  <div className="relative mr-3">
+                  <img
+                    src={user.photo || defaultProfilePic}
+                    alt={user.username}
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-blue-200"
+                  />
+                  {user.status && <VerifiedCheckmark />}
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <p className="text-blue-900 font-medium text-sm sm:text-base">
+                      {user.firstName || user.username}
+                    </p>
+
+                    {/* New badge right next to username */}
+                    {unreadCount > 0 && (
+                      <span className="bg-red-100 text-red-700 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm ml-24">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
+
+                  {onlineMap[user.email]?.online ? (
+                    <p className="text-green-600 text-xs sm:text-sm">Active now</p>
+                  ) : (
+                    <p className="text-gray-500 text-xs sm:text-sm">
+                      Last seen {onlineMap[user.email]?.lastSeen || "a while ago"}
+                    </p>
+                  )}
+                </div>
+
+                </div>
+              );
+            })
+        )}
       </div>
 
-      {/* Chat Area */}
+      {/* -- Chat Area -- */}
       {selectedUser && (
-        <div className={`flex-1 flex flex-col ${!showChat ? "hidden md:flex" : "flex"}`}>
+        <div
+          className={`flex-1 flex flex-col ${!showChat ? "hidden md:flex" : "flex"}`}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b-2 border-blue-100">
             <div className="flex items-center">
@@ -204,16 +285,26 @@ export default function Messages() {
                   />
                 </svg>
               </button>
-              <img
-                src={selectedUser.photo || defaultProfilePic}
-                alt={selectedUser.username}
-                className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-2 border-blue-200 mr-3"
-              />
+              <div className="relative mr-3">
+                <img
+                  src={selectedUser.photo || defaultProfilePic}
+                  alt={selectedUser.username}
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-2 border-blue-200"
+                />
+                {selectedUser.status && <VerifiedCheckmark />}
+              </div>
+
               <div>
                 <h3 className="text-blue-900 font-semibold text-sm sm:text-base">
                   {selectedUser.firstName || selectedUser.username}
                 </h3>
-                <p className="text-blue-600 text-xs sm:text-sm">Online</p>
+                {onlineMap[selectedUser.email]?.online ? (
+                  <p className="text-green-600 text-xs sm:text-sm">Online</p>
+                ) : (
+                  <p className="text-gray-500 text-xs sm:text-sm">
+                    Last seen {onlineMap[selectedUser.email]?.lastSeen || "recently"}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -221,21 +312,30 @@ export default function Messages() {
           {/* Messages */}
           <div className="flex-1 p-4 overflow-y-auto space-y-4">
             {messages[selectedUser.email]
-              ?.slice() // clone the array to avoid mutating original
-              .sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt)) // sort ascending by sentAt
+              ?.slice()
+              .sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt))
               .map((msg, index) => {
                 const isMine = msg.senderEmail === currentUser?.email;
                 return (
-                  <div key={index} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                  <div
+                    key={index}
+                    className={`flex ${
+                      isMine ? "justify-end" : "justify-start"
+                    }`}
+                  >
                     <div
-                      className={`p-3 max-w-[90%] sm:max-w-md rounded-2xl ${
+                      className={`flex flex-col whitespace-pre-wrap break-words p-3 max-w-[85%] sm:max-w-lg rounded-2xl ${
                         isMine
                           ? "bg-teal-600 text-white rounded-br-none"
                           : "bg-blue-100 text-blue-900 rounded-bl-none"
-                      } shadow-md transition-all duration-200`}
+                      } shadow-md`}
                     >
-                      <p className="text-sm">{msg.text}</p>
-                      <p className={`text-xs mt-1 ${isMine ? "text-teal-100" : "text-blue-600"}`}>
+                      <p className="text-sm leading-relaxed">{msg.text}</p>
+                      <p
+                        className={`text-xs mt-2 self-end ${
+                          isMine ? "text-teal-100" : "text-blue-600"
+                        }`}
+                      >
                         {new Date(msg.sentAt).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -243,6 +343,8 @@ export default function Messages() {
                       </p>
                     </div>
                   </div>
+
+
                 );
               })}
           </div>

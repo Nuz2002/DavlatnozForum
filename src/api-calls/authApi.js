@@ -99,9 +99,12 @@ export const forgotPassword = async (forgotPasswordData) => {
 
 export const resetPassword = async (resetPasswordData) => {
   try {
+    console.log("Sending reset password request:", resetPasswordData);
     const response = await axios.post(`${API_BASE_URL}/reset-password`, resetPasswordData);
+    console.log("Response:", response.data);
     return response.data;
   } catch (error) {
+    console.error("Reset password error:", error.response?.data || error.message);
     throw error;
   }
 };

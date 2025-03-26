@@ -1,19 +1,24 @@
 // /src/components/Publications/NewPostCard.js
 import React from 'react';
+import VerifiedCheckmark from '../VerifiedCheckMark';
 
 // const defaultProfilePic = 'https://i.pravatar.cc/40';
 
 import defaultProfilePic from '../../assets/default-profile.png';
 
 export default function NewPostCard({ user, newPost, setNewPost, handlePostSubmit }) {
+  console.log(user.status)
   return (
     <div className="bg-white rounded-xl shadow-md p-4 mb-6 border border-blue-100">
       <div className="flex items-center mb-4">
+        <div className='relative'>
         <img
           src={user.photo || defaultProfilePic}
           alt={user.name}
-          className="w-10 h-10 rounded-full border-2 border-blue-100"
+          className="w-11 h-11 rounded-full border-2 border-blue-100"
         />
+        {user?.status && <VerifiedCheckmark />}
+        </div>
         <div className="ml-3">
           <p className="font-bold text-blue-900">{user.name}</p>
           <p className="text-sm text-blue-600">@{user.username}</p>

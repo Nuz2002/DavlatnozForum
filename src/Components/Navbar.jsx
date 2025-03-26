@@ -12,6 +12,9 @@ const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     localStorage.getItem('accessToken') !== null
   );
+  const userType = localStorage.getItem('userType');
+  const isAdmin = userType === 'ADMIN';
+
 
   const handleLogout = async () => {
     try {
@@ -82,38 +85,52 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-6 lg:space-x-8">
-          <Link
-            to="/home"
-            className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
-          >
-            <FaHome className="mr-2" />
-            Home
-          </Link>
+        {!isAdmin && (
+          <>
+            <Link
+              to="/home"
+              className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
+            >
+              <FaHome className="mr-2" />
+              Home
+            </Link>
 
-          <Link
-            to="/publications"
-            className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
-          >
-            <FaNewspaper className="mr-2" />
-            Publications
-          </Link>
+            <Link
+              to="/publications"
+              className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
+            >
+              <FaNewspaper className="mr-2" />
+              Publications
+            </Link>
 
-          <Link
-            to="/messages"
-            className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
-          >
-            <FaEnvelope className="mr-2" />
-            Messages
-          </Link>
+            <Link
+              to="/messages"
+              className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
+            >
+              <FaEnvelope className="mr-2" />
+              Messages
+            </Link>
 
+            <Link
+              to="/experts"
+              className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
+            >
+              <FaUserTie className="mr-2" />
+              Experts
+            </Link>
+          </>
+        )}
+        {isAdmin && (
           <Link
-            to="/experts"
+            to="/admin"
             className="flex items-center text-white text-base lg:text-lg hover:text-teal-400 transition-colors duration-200"
           >
             <FaUserTie className="mr-2" />
-            Experts
+            Admin Panel
           </Link>
-        </div>
+        )}
+      </div>
+
 
         {/* Desktop Auth Section */}
         <div className="hidden md:flex items-center space-x-6 relative" ref={dropdownRef}>
@@ -167,6 +184,8 @@ const Navbar = () => {
         {isMobileMenuOpen && (
           <div ref={mobileMenuRef} className="md:hidden absolute top-full left-0 right-0 bg-blue-900 shadow-lg py-4 px-6 space-y-4">
             <div className="flex flex-col space-y-4">
+          {!isAdmin ? (
+            <>
               <Link
                 to="/home"
                 className="flex items-center text-white hover:text-teal-400 transition-colors duration-200"
@@ -202,7 +221,19 @@ const Navbar = () => {
                 <FaUserTie className="mr-3" />
                 Experts
               </Link>
-            </div>
+            </>
+          ) : (
+            <Link
+              to="/admin"
+              className="flex items-center text-white hover:text-teal-400 transition-colors duration-200"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <FaUserTie className="mr-3" />
+              Admin Panel
+            </Link>
+          )}
+        </div>
+
 
             <div className="pt-4 border-t border-blue-700">
               {!isAuthenticated ? (

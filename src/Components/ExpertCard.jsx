@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom";
+import defaultProfilePic from "../assets/default-profile.png"
 
 
-const ExpertCard = ({ expert }) => {
+const ExpertCard = ({ expert, currentUser }) => {
+
+  const isSelf =
+  currentUser &&
+  expert &&
+  (
+    (currentUser.username?.toLowerCase() === expert.username?.toLowerCase()) ||
+    (currentUser.email?.toLowerCase() === expert.email?.toLowerCase())
+  );
+
+
     return (
       <div className="max-w-sm bg-white rounded-xl overflow-hidden shadow-lg p-6 flex flex-col h-full border-2 border-blue-50 hover:border-teal-100 transition-all duration-200">
         <div className="flex-1">
@@ -9,7 +20,7 @@ const ExpertCard = ({ expert }) => {
             <div className="relative inline-block">
               <img
                 className="h-24 w-24 rounded-full border-4 border-white shadow-md"
-                src={expert.photo}
+                src={expert.photo || defaultProfilePic}
                 alt={expert.name}
               />
               <span className="absolute bottom-0 right-0 transform translate-x-1/4 -translate-y-1/4 bg-teal-500 rounded-full p-1 flex items-center justify-center">
@@ -48,16 +59,20 @@ const ExpertCard = ({ expert }) => {
             >
               {expert.status}
             </span>
-          </div>
+          </div> 
         </div>
+{/* Conditionally show message button */}
+      {!isSelf && (
         <div className="mt-6 flex justify-center">
-        <Link
-          to={`/messages/${expert.username}`}
-          className="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-6 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg"
-        >
-          Message
-        </Link>
+          <Link
+            to={`/messages/${expert.username}`}
+            state={{ user: expert }}
+            className="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-6 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            Message
+          </Link>
         </div>
+      )}
       </div>
     );
   };

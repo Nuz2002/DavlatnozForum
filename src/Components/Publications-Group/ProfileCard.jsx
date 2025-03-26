@@ -2,8 +2,10 @@
 import { Link } from 'react-router-dom';
 import defaultProfilePic from '../../assets/default-profile.png';
 
-const ProfileCard = ({ user, onClose, isLoading }) => {
+const ProfileCard = ({ user, currentUser, onClose, isLoading }) => {
   if (!user || user.accountType !== true) return null;
+
+  const isOwnProfile = currentUser?.username === user.username;
 
   return (
     <div className="profile-card-overlay">
@@ -61,15 +63,17 @@ const ProfileCard = ({ user, onClose, isLoading }) => {
                 </div>
               )}
 
-              <div className="w-full pt-6">
-              <Link
-                to={`/messages/${user.username}`}
-                state={{ user }}
-                className="block w-full bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-teal-100"
-              >
-                Send Message
-              </Link>
-              </div>
+              {!isOwnProfile && (
+                <div className="w-full pt-6">
+                  <Link
+                    to={`/messages/${user.username}`}
+                    state={{ user }}
+                    className="block w-full bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-teal-100"
+                  >
+                    Send Message
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

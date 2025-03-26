@@ -76,13 +76,14 @@ function AppContent() {
           }
         />
         <Route
-          path="/messages"
+          path="/messages/:username?"
           element={
             <ProtectedRoute>
               <Messages />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/experts"
           element={

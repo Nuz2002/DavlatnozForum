@@ -192,7 +192,7 @@ const closeProfileCard = () => {
 
       {/* Profile modal (only shows for a public user) */}
       {selectedUserForProfile && (
-        <ProfileCard user={selectedUserForProfile} onClose={closeProfileCard} isLoading={isProfileLoading}/>
+        <ProfileCard user={selectedUserForProfile} onClose={closeProfileCard} isLoading={isProfileLoading} currentUser={user}/>
       )}
     </div>
   );
